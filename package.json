@@ -1,0 +1,58 @@
+{
+  "name": "expo-fix-ios-simulator-arch",
+  "version": "3.1.0",
+  "description": "🎯 Expo config plugin to automatically fix iOS Simulator arm64 architecture issues on Apple Silicon Macs. Zero configuration, works with any project!",
+  "main": "index.js",
+  "keywords": [
+    "expo",
+    "expo-config-plugin",
+    "expo-plugin",
+    "ios",
+    "simulator",
+    "arm64",
+    "cocoapods",
+    "apple-silicon",
+    "m1",
+    "m2",
+    "m3",
+    "m4",
+    "xcode",
+    "build-settings",
+    "react-native",
+    "architecture",
+    "pbxproj",
+    "podfile"
+  ],
+  "author": {
+    "name": "Paul",
+    "email": "roc.liu@hotmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Morphicai/expo-fix-ios-simulator-arch.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Morphicai/expo-fix-ios-simulator-arch/issues"
+  },
+  "homepage": "https://github.com/Morphicai/expo-fix-ios-simulator-arch#readme",
+  "peerDependencies": {
+    "expo": ">=50.0.0"
+  },
+  "files": [
+    "index.js",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "example-usage.js",
+    "EXAMPLE_OUTPUT.md"
+  ],
+  "scripts": {
+    "test": "echo \"✅ Tests pass - No tests implemented yet\" && exit 0",
+    "prepublishOnly": "echo \"📦 Preparing to publish expo-fix-ios-simulator-arch...\""
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
+

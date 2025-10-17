@@ -1,0 +1,53 @@
+# Source control
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.travis.yml
+.gitlab-ci.yml
+circle.yml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+test/
+tests/
+__tests__/
+*.test.js
+*.spec.js
+coverage/
+.nyc_output/
+
+# Documentation (keep only essential docs)
+docs/
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+SECURITY.md
+
+# Build tools
+.editorconfig
+.eslintrc*
+.prettierrc*
+tsconfig.json
+
+# Misc
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Keep these files
+!README.md
+!CHANGELOG.md
+!LICENSE
+!index.js
+!example-usage.js
+!EXAMPLE_OUTPUT.md
+

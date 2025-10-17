@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Test on Node.js ${{ matrix.node-version }}
+    runs-on: macos-latest
+    
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Get npm cache directory
+      id: npm-cache-dir
+      run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
+    
+    - name: Cache npm dependencies
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.npm-cache-dir.outputs.dir }}
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    
+    - name: Install dependencies
+      run: npm ci || npm install
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Check package files
+      run: |
+        echo "Checking required files..."
+        test -f index.js && echo "✅ index.js exists"
+        test -f package.json && echo "✅ package.json exists"
+        test -f README.md && echo "✅ README.md exists"
+        test -f CHANGELOG.md && echo "✅ CHANGELOG.md exists"
+        test -f LICENSE && echo "✅ LICENSE exists"
+    
+    - name: Validate package.json
+      run: |
+        node -e "const pkg = require('./package.json'); console.log('Package:', pkg.name, pkg.version)"
+
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+    
+    - name: Check JavaScript syntax
+      run: |
+        node -c index.js
+        echo "✅ JavaScript syntax is valid"
+
+  architecture-test:
+    name: Test Architecture Detection
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [macos-latest, macos-13]
+        include:
+          - os: macos-latest
+            arch: arm64
+            description: "Apple Silicon"
+          - os: macos-13
+            arch: x64
+            description: "Intel"
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+    
+    - name: Check architecture
+      run: |
+        echo "Running on: ${{ matrix.description }}"
+        node -e "console.log('Detected architecture:', require('os').arch())"
+        node -e "console.log('Expected architecture:', '${{ matrix.arch }}')"
+

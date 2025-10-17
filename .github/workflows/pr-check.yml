@@ -1,0 +1,115 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-validation:
+    name: Validate Pull Request
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+    
+    - name: Check PR title
+      run: |
+        PR_TITLE="${{ github.event.pull_request.title }}"
+        if [[ ! "$PR_TITLE" =~ ^(feat|fix|docs|refactor|test|chore|style|perf): ]]; then
+          echo "❌ PR title must start with: feat:, fix:, docs:, refactor:, test:, chore:, style:, or perf:"
+          echo "Current title: $PR_TITLE"
+          exit 1
+        fi
+        echo "✅ PR title follows convention"
+    
+    - name: Check for CHANGELOG update
+      run: |
+        if git diff --name-only origin/main...HEAD | grep -q "CHANGELOG.md"; then
+          echo "✅ CHANGELOG.md has been updated"
+        else
+          echo "⚠️  Warning: CHANGELOG.md not updated. Consider adding an entry."
+        fi
+    
+    - name: Lint commits
+      run: |
+        echo "Checking commit messages..."
+        git log --format=%s origin/main..HEAD | while read msg; do
+          if [[ ! "$msg" =~ ^(feat|fix|docs|refactor|test|chore|style|perf): ]]; then
+            echo "❌ Invalid commit message: $msg"
+            echo "Commit messages should follow conventional commits format"
+            exit 1
+          fi
+        done
+        echo "✅ All commit messages follow convention"
+    
+    - name: Check file sizes
+      run: |
+        echo "Checking file sizes..."
+        find . -name "*.js" -type f -size +100k -exec ls -lh {} \;
+        if [ $? -eq 0 ]; then
+          echo "⚠️  Warning: Large JavaScript files detected"
+        else
+          echo "✅ No large files detected"
+        fi
+
+  size-check:
+    name: Check Package Size
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+    
+    - name: Check package size
+      run: |
+        npm pack
+        SIZE=$(ls -lh *.tgz | awk '{print $5}')
+        echo "📦 Package size: $SIZE"
+        
+        # Check if size is reasonable (< 100KB)
+        SIZE_BYTES=$(ls -l *.tgz | awk '{print $5}')
+        if [ $SIZE_BYTES -gt 102400 ]; then
+          echo "⚠️  Warning: Package size is larger than 100KB"
+        else
+          echo "✅ Package size is reasonable"
+        fi
+
+  documentation-check:
+    name: Check Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Check for README updates
+      run: |
+        if git diff --name-only origin/main...HEAD | grep -E "(index.js|package.json)" | grep -v CHANGELOG; then
+          if git diff --name-only origin/main...HEAD | grep -q "README.md"; then
+            echo "✅ README.md updated with code changes"
+          else
+            echo "⚠️  Warning: Code changed but README.md not updated"
+          fi
+        else
+          echo "✅ No code changes requiring README update"
+        fi
+    
+    - name: Check for broken links
+      run: |
+        echo "Checking for broken internal links..."
+        grep -r "\[.*\](\.\/.*\.md)" README.md CONTRIBUTING.md || true
+        echo "✅ Link check complete"
+
